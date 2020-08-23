@@ -4,8 +4,6 @@
  * license information.
  */
 
-'use strict';
-
 const { DefaultAzureCredential } = require("@azure/identity");
 const { SecretClient } = require("@azure/keyvault-secrets");
 const { EventGridClient } = require("@azure/eventgrid");
@@ -24,7 +22,7 @@ module.exports = class EventDrivenSecretCache {
   * updates the cache when receiving an Event Grid notification.
   */
   constructor() {
-    this.#secretCache = [];
+    this.#secretCache = {};
   }
 
   async init() {
@@ -46,7 +44,12 @@ module.exports = class EventDrivenSecretCache {
     const properties = this.#secretClient.listPropertiesOfSecrets();
     for await (let secretProperty of properties) {
       const secretName = secretProperty.name;
-      this.#secretCache[secretName] = await this.#secretClient.getSecret(secretName);
+      const secretValue = await this.#secretClient.getSecret(secretName);
+      this.#secretCache[secretName] = secretValue.value;
     }
+  }
+
+  get secrets() {
+    return this.#secretCache;
   }
 }
