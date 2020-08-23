@@ -1,0 +1,15 @@
+{
+  "name": "@mcs/secret-cache",
+  "version": "1.0.0",
+  "description": "A cache that maintains Azure Key Vault secrets and refreshes the cache on an Event Grid event.",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Fran Aguilera",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/eventgrid": "^2.0.0",
+    "@azure/identity": "^1.1.0",
+    "@azure/keyvault-secrets": "^4.1.0",
+    "prettier": "^2.0.5"
+  }
+}
