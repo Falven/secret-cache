@@ -48,6 +48,11 @@ module.exports = class EventDrivenSecretCache {
     }
   }
 
+  async updateSecret(secretName) {
+    const newSecretValue = await this.#secretClient.getSecret(secretName);
+    this.#secretCache[secretName] = newSecretValue;
+  }
+
   get secrets() {
     return this.#secretCache;
   }
