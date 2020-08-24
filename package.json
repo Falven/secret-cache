@@ -10,6 +10,7 @@
     "@azure/eventgrid": "^2.0.0",
     "@azure/identity": "^1.1.0",
     "@azure/keyvault-secrets": "^4.1.0",
+    "body-parser": "^1.19.0",
     "prettier": "^2.0.5"
   }
 }
