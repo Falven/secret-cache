@@ -28,8 +28,6 @@ module.exports = class EventDrivenSecretCache {
 
     expressServer.post("/api/updates", async (req, res) => {
       console.log('Received Event.');
-      console.log('Headers:\n' + JSON.stringify(req.headers));
-      console.log('Body:\n' + JSON.stringify(req.body));
 
       const header = req.get("Aeg-Event-Type");
       if (header && req.body && Object.keys(req.body).length > 0) {
@@ -47,11 +45,12 @@ module.exports = class EventDrivenSecretCache {
           if (header === 'Notification') {
             if (event.eventType == 'Microsoft.KeyVault.SecretNewVersionCreated') {
               await this.updateSecret(event.data.ObjectName);
-              return res.status(200).end();
             }
           }
         }
       }
+      
+      return res.status(200).end();
     });
   }
 
