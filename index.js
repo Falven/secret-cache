@@ -50,6 +50,7 @@ module.exports = class EventDrivenSecretCache {
 
   async updateSecret(secretName) {
     const newSecretValue = await this._secretClient.getSecret(secretName);
+    console.log('newSecretValue: ' + newSecretValue);
     this._secretCache[secretName] = newSecretValue;
   }
 
