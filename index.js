@@ -14,15 +14,15 @@ const { EventGridClient } = require("@azure/eventgrid");
  */
 module.exports = class EventDrivenSecretCache {
 
-  #secretCache;
-  #secretClient;
+  _secretCache;
+  _secretClient;
 
   /*
   * Maintains a cache of secrets from the given Azure Key Vault and
   * updates the cache when receiving an Event Grid notification.
   */
   constructor(expressServer) {
-    this.#secretCache = {};
+    this._secretCache = {};
   }
 
   async init() {
@@ -39,21 +39,21 @@ module.exports = class EventDrivenSecretCache {
     const url = `https://${vaultName}.vault.azure.net`;
 
     // Lastly, create our secrets client and connect to the service
-    this.#secretClient = new SecretClient(url, credential);
+    this._secretClient = new SecretClient(url, credential);
 
-    for await (let secretProperty of this.#secretClient.listPropertiesOfSecrets()) {
+    for await (let secretProperty of this._secretClient.listPropertiesOfSecrets()) {
       const secretName = secretProperty.name;
-      const secretValue = await this.#secretClient.getSecret(secretName);
-      this.#secretCache[secretName] = secretValue.value;
+      const secretValue = await this._secretClient.getSecret(secretName);
+      this._secretCache[secretName] = secretValue.value;
     }
   }
 
   async updateSecret(secretName) {
-    const newSecretValue = await this.#secretClient.getSecret(secretName);
-    this.#secretCache[secretName] = newSecretValue;
+    const newSecretValue = await this._secretClient.getSecret(secretName);
+    this._secretCache[secretName] = newSecretValue;
   }
 
   get secrets() {
-    return this.#secretCache;
+    return this._secretCache;
   }
 }
