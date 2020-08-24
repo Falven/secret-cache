@@ -6,7 +6,7 @@
 
 const { DefaultAzureCredential } = require('@azure/identity');
 const { SecretClient } = require('@azure/keyvault-secrets');
-const { bodyParser } = require('body-parser');
+const bodyParser = require('body-parser');
 
 /*
  * Maintains a cache of secrets from the given Azure Key Vault and
