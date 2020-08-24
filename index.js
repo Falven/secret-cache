@@ -24,10 +24,24 @@ module.exports = class EventDrivenSecretCache {
   constructor(expressServer) {
     this.#secretCache = {};
 
-    expressServer.get("/hook", (req, res) => {
-      res.status(200).end("Hook!");
-      // console.log(req.body);
-      // res.status(200).end();
+    expressServer.post("/api/updates", (req, res) => {
+
+      console.log('Received WebHook trigger.');
+      console.log(req.body);
+
+      var validationEventType = "Microsoft.EventGrid.SubscriptionValidationEvent";
+  
+      for (var events in req.body) {
+          var body = req.body[events];
+          // Deserialize the event data into the appropriate type based on event type
+          if (body.data && body.eventType == validationEventType) {
+              console.log("Got SubscriptionValidation event data, validation code: " + body.data.validationCode + " topic: " + body.topic);
+  
+              // Do any additional validation (as required) and then return back the below response
+              var code = body.data.validationCode;
+              res.status(200).end({ "ValidationResponse": code });
+          }
+      }
     });
   }
 
