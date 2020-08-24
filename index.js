@@ -41,8 +41,7 @@ module.exports = class EventDrivenSecretCache {
     // Lastly, create our secrets client and connect to the service
     this.#secretClient = new SecretClient(url, credential);
 
-    const properties = this.#secretClient.listPropertiesOfSecrets();
-    for await (let secretProperty of properties) {
+    for await (let secretProperty of this.#secretClient.listPropertiesOfSecrets()) {
       const secretName = secretProperty.name;
       const secretValue = await this.#secretClient.getSecret(secretName);
       this.#secretCache[secretName] = secretValue.value;
