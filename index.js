@@ -21,8 +21,14 @@ module.exports = class EventDrivenSecretCache {
   * Maintains a cache of secrets from the given Azure Key Vault and
   * updates the cache when receiving an Event Grid notification.
   */
-  constructor() {
+  constructor(expressServer) {
     this.#secretCache = {};
+
+    expressServer.get("/hook", (req, res) => {
+      res.status(200).end("Hook!");
+      // console.log(req.body);
+      // res.status(200).end();
+    });
   }
 
   async init() {
