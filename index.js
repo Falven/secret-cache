@@ -46,7 +46,7 @@ module.exports = class EventDrivenSecretCache {
           // Check for KeyVault secret event type.
           if (header === 'Notification') {
             if (event.eventType == 'Microsoft.KeyVault.SecretNewVersionCreated') {
-              await updateSecret(event.data.ObjectName);
+              await this.updateSecret(event.data.ObjectName);
               return res.status(200).end();
             }
           }
