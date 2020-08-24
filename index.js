@@ -6,7 +6,6 @@
 
 const { DefaultAzureCredential } = require("@azure/identity");
 const { SecretClient } = require("@azure/keyvault-secrets");
-const { EventGridClient } = require("@azure/eventgrid");
 
 /*
  * Maintains a cache of secrets from the given Azure Key Vault and
@@ -23,6 +22,36 @@ module.exports = class EventDrivenSecretCache {
   */
   constructor(expressServer) {
     this._secretCache = {};
+
+    expressServer.use(bodyParser.json());
+
+    expressServer.post("/api/updates", async (req, res) => {
+      console.log('Received Event.');
+      console.log('Headers:\n' + JSON.stringify(req.headers));
+      console.log('Body:\n' + JSON.stringify(req.body));
+
+      const header = req.get("Aeg-Event-Type");
+      if (header && req.body && Object.keys(req.body).length > 0) {
+        const event = req.body[0];
+
+        if (event && event.eventType && event.data) {
+          // Check for Webhook validation handshake event type.
+          if (header === 'SubscriptionValidation') {
+            if (event.data.validationCode && event.eventType == 'Microsoft.EventGrid.SubscriptionValidationEvent') {
+              return res.send({ "validationResponse": event.data.validationCode })
+            }
+          }
+
+          // Check for KeyVault secret event type.
+          if (header === 'Notification') {
+            if (event.eventType == 'Microsoft.KeyVault.SecretNewVersionCreated') {
+              await updateSecret(event.data.ObjectName);
+              return res.status(200).end();
+            }
+          }
+        }
+      }
+    });
   }
 
   async init() {
@@ -34,7 +63,7 @@ module.exports = class EventDrivenSecretCache {
 
     // Build the URL to reach our key vault
     const vaultName = process.env['AZURE_KEYVAULT_NAME'];
-    if(!vaultName)
+    if (!vaultName)
       throw new Error('EventDrivenSecretCache requires the Azure Key Vault Name to be present in the process environment variables.');
     const url = `https://${vaultName}.vault.azure.net`;
 
@@ -43,15 +72,14 @@ module.exports = class EventDrivenSecretCache {
 
     for await (let secretProperty of this._secretClient.listPropertiesOfSecrets()) {
       const secretName = secretProperty.name;
-      const secretValue = await this._secretClient.getSecret(secretName);
-      this._secretCache[secretName] = secretValue.value;
+      const secret = await this._secretClient.getSecret(secretName);
+      this._secretCache[secretName] = secret.value;
     }
   }
 
   async updateSecret(secretName) {
-    const newSecretValue = await this._secretClient.getSecret(secretName);
-    console.log('newSecretValue: ' + newSecretValue);
-    this._secretCache[secretName] = newSecretValue;
+    const newSecret = await this._secretClient.getSecret(secretName);
+    this._secretCache[secretName] = newSecret.value;
   }
 
   get secrets() {
