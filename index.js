@@ -72,8 +72,7 @@ module.exports = class EventDrivenSecretCache {
 
     for await (let secretProperty of this._secretClient.listPropertiesOfSecrets()) {
       const secretName = secretProperty.name;
-      const secret = await this._secretClient.getSecret(secretName);
-      this._secretCache[secretName] = secret.value;
+      await this.updateSecret(secretName);
     }
   }
 
